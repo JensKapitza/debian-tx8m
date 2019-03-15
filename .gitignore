@@ -1,3 +1,7 @@
+# sphinx build
+docs/_build
+
+# uuu stuff
 libusb-1.0.dll
 uuu
 uuu.exe
