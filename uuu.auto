@@ -1,0 +1,89 @@
+uuu_version 1.0.1
+################################################################################
+# Ka-Ro electronics GmbH
+# @author mb@karo-electronics.de
+# Report issues on github - https://github.com/karo-electronics/debian-tx8m
+#
+# Usage: Make sure you have UUU from NXP in place and ready to use. Run uuu -v
+# in the folder of this file to see some log output. For more detailed documen-
+# tation how to setup your board, see our official documentation of this repo.
+################################################################################
+# boot our uboot with fastboot support
+SDP: boot -f /u-boot/u-boot-tx8m-1610_mfg-2019-03-12.bin
+SDPU: write -f /u-boot/u-boot-tx8m-1610_mfg-2019-03-12.bin -offset 0x57c00
+SDPU: jump
+################################################################################
+# prepare uboot environment to boot debian with our settings
+# write this to emmc to get it used later
+# TODO: read this from a config file
+FB: ucmd setenv baudrate 115200
+FB: ucmd setenv boot_mode mmc
+FB: ucmd setenv bootargs_mmc 'setenv bootargs console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200 root=/dev/mmcblk0p2 rootwait rw ip=dhcp'
+FB: ucmd setenv bootcmd 'run bootcmd_${boot_mode} bootm_cmd'
+FB: ucmd setenv bootcmd_mmc run bootargs_mmc loadfdt loadkernel
+FB: ucmd setenv bootm_cmd booti '${loadaddr} ${initrd_addr} ${fdt_addr}'
+FB: ucmd setenv fdt_addr 0x43000000
+FB: ucmd setenv fdt_file imx8mm-tx8m-1610-devkit.dtb
+FB: ucmd setenv fdt_high 0x63000000
+FB: ucmd setenv initrd_addr -
+FB: ucmd setenv initrd_high 0x63800000
+FB: ucmd setenv loadaddr 0x40480000
+FB: ucmd setenv mmcdev 0
+FB: ucmd setenv mmcpart 1
+FB: ucmd setenv loadfdt 'load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}'
+FB: ucmd setenv loadkernel 'load mmc ${mmcdev}:${mmcpart} ${loadaddr} Image-imx8mm-tx8m'
+FB: ucmd saveenv
+################################################################################
+# write our non-fastboot uboot to emmc
+# this uboot is the one that boots our debian after installation
+FB: ucmd setenv fastboot_dev mmc
+FB: ucmd mmc dev 0
+FB: flash bootloader /u-boot/u-boot-tx8m-1610-2019-03-12.bin
+FB: ucmd mmc partconf 0 0 1 0
+################################################################################
+# Run initram with nxp-kernel and nxp-dtb (needed bcs of utp support)
+FB: ucmd setenv emmc_dev 0
+FB: ucmd setenv fastboot_dev mmc
+FB: ucmd setenv mmcdev ${emmc_dev}
+FB: ucmd mmc dev ${emmc_dev}
+FB: ucmd setenv append_bootargs clk_ignore_unused quiet
+FB: ucmd setenv console ttymxc0,115200
+FB: ucmd setenv bootargs init=/linuxrc console=${console} panic=-1 ro ${append_bootargs}
+FB: ucmd setenv fastboot_buffer ${loadaddr}
+# load nxp kernel
+FB: download -f /kernel/414nxp.bin
+FB: ucmd setenv fastboot_buffer ${fdt_addr}
+# load nxp dtb
+FB: download -f /dtb/nxp.dtb
+FB: ucmd setenv initram_addr 0x50000000
+FB: ucmd setenv fastboot_buffer ${initram_addr}
+FB: ucmd fdt addr ${fdt_addr}
+# disable CAAM, otherwise kernel won't start
+FB: ucmd fdt rm /caam ; fdt rm /caam-sm ; fdt rm /caam-snvs ; fdt rm /caam_secvio
+FB: download -f /initram/fsl-nxp.cpio.gz.u-boot
+FB: acmd booti ${loadaddr} ${initram_addr} ${fdt_addr}
+################################################################################
+# Partitioning (configurated in emmc.part file)
+FBK: ucp emmc.part t:/tmp
+FBK: acmd sfdisk /dev/mmcblk0 < /tmp/emmc.part
+# Formatting devices
+FBK: ucmd mkfs.ext4 -L boot /dev/mmcblk0p1
+FBK: ucmd mkfs.ext4 -L rfs /dev/mmcblk0p2
+FBK: ucmd mkswap /dev/mmcblk0p3
+################################################################################
+# Copy kernel and dtb (to first partition mmcblk0p1, mounted as /boot)
+FBK: ucmd mount /dev/mmcblk0p1 /mnt
+FBK: acmd cat - > /mnt/Image-imx8mm-tx8m
+FBK: ucp /kernel/Image-imx8mm-tx8m t:-
+FBK: acmd cat - > /mnt/imx8mm-tx8m-1610-devkit.dtb
+FBK: ucp /dtb/imx8mm-tx8m-1610-devkit.dtb t:-
+FBK: ucmd sync && umount /mnt
+################################################################################
+# Copy rootfs (unpack the tar and put it to mmcblk0p2 mounted as rootfs)
+FBK: ucmd mount /dev/mmcblk0p2 /mnt
+FBK: acmd EXTRACT_UNSAFE_SYMLINKS=1 tar -xz -C /mnt
+FBK: ucp /rootfs/rootfs.tar.gz t:-
+FBK: ucmd sync && umount /mnt
+################################################################################
+# Done
+FBK: done
