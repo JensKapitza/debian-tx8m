@@ -1,20 +1,14 @@
-.. TX8M Development Kit Debian documentation documentation master file, created by
-   sphinx-quickstart on Fri Mar 15 12:07:04 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Welcome to Ka-Ro's TX8M Development Kit Debian documentation!
+=============================================================
 
-Welcome to TX8M Development Kit Debian documentation's documentation!
-=====================================================================
+This documentation gives you instructions how to install different Debian versions to your TX8M Development Kit.
+We recommend to use the Debian Stretch desktop environment, but you can also choose other options.
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: Overview:
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   Debian Stretch desktop <debian-stretch-desktop/index.rst>
+   Debian Stretch headless <debian-stretch-headless/index.rst>
+   Manual installation <manual-installation/index.rst>
+   FAQ <faq/index.rst>

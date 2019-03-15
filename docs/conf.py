@@ -129,7 +129,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'TX8MDevelopmentKitDebiandocumentation.tex', u'TX8M Development Kit Debian documentation Documentation',
+    (master_doc, 'TX8MDevelopmentKitDebiandocumentation.tex', u'TX8M Development Kit Debian documentation',
      u'Ka-Ro electronics GmbH', 'manual'),
 ]
 
@@ -139,7 +139,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'tx8mdevelopmentkitdebiandocumentation', u'TX8M Development Kit Debian documentation Documentation',
+    (master_doc, 'tx8mdevelopmentkitdebiandocumentation', u'TX8M Development Kit Debian documentation',
      [author], 1)
 ]
 
@@ -150,7 +150,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'TX8MDevelopmentKitDebiandocumentation', u'TX8M Development Kit Debian documentation Documentation',
+    (master_doc, 'TX8MDevelopmentKitDebiandocumentation', u'TX8M Development Kit Debian documentation',
      author, 'TX8MDevelopmentKitDebiandocumentation', 'One line description of project.',
      'Miscellaneous'),
 ]
