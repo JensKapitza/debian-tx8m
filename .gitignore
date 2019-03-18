@@ -1,6 +1,9 @@
 # sphinx build
 docs/_build
 
+# roots
+rootfs.*
+
 # uuu stuff
 libusb-1.0.dll
 uuu
