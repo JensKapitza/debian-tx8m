@@ -26,7 +26,7 @@ The **u**\ niversal **u**\ pdate **u**\ tility is used to program your board.
 1. Get ``uuu``, ``uuu.exe`` and ``libusb-1.0.dll`` from NXP's official repository `here <https://github.com/NXPmicro/mfgtools/releases/tag/uuu_1.2.0>`_.
 2. Put these three files inside the root of our repository you cloned.
 
-Running UUU to program your board
+Running uuu to program your board
 ---------------------------------
 
 1. Plug the micro USB, that is connected into the OTG port of your board, into your computer.

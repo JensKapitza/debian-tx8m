@@ -1,46 +1,66 @@
 Manual installation
 ===================
 
-.. raw:: html
-
-  <p style="color: red;"><b>This page is under construction...</b></p>
-
-
 Before you start
 ----------------
 
 Insert the TX8M module carefully into your development kit.
 Unpack your development kit, connect the 12V DC power and the micro USB connector to the OTG port.
-Clone our github repository to get the files neccessary: `https://github.com/karo-electronics/debian-tx8m <https://github.com/karo-electronics/debian-tx8m>`_.
+Clone our github repository at branch `u-boot` to get the files neccessary: `https://github.com/karo-electronics/debian-tx8m <https://github.com/karo-electronics/debian-tx8m>`_.
 
-Flashing U-Boot to your module
-------------------------------
+Getting uuu
+-----------
 
-- TODO: uuu for this, documentation for this.
+The **u**\ niversal **u**\ pdate **u**\ tility is used to program your board.
+
+1. Get ``uuu``, ``uuu.exe`` and ``libusb-1.0.dll`` from NXP's official repository `here <https://github.com/NXPmicro/mfgtools/releases/tag/uuu_1.2.0>`_.
+2. Put these three files inside the root of our repository you cloned.
+
+Running uuu to flash u-boot
+---------------------------
+
+1. Plug the micro USB, that is connected into the OTG port of your board, into your computer.
+
+2. Open a command line inside the repository root folder on your computer.
+
+3. Press the reset button on your board.
+
+4. Run the following:
+
+.. code-block:: shell
+
+  .\uuu.exe -v
+
+This will start *uuu* using the *uuu.auto* script and gives you information about the setup process.
+
+When *uuu* has run with everything okay, you can just remove the bootmode jumper and unplug the micro USB cable.
 
 Installing debian from net with U-Boot
 --------------------------------------
 
-**Preparing your device**
-
-1. Connect a network cable.
-2. Connect to your starter kit via PUTTY or another terminal and boot into U-Boot.
-
 **Ramdisk, kernel, devicetree**
 
-Download the ramdisk file `here <http://ftp.halifax.rwth-aachen.de/debian/dists/stretch/main/installer-arm64/current/images/netboot/debian-installer/arm64/initrd.gz>`_.
-Extract it, to get the *initrd* file. On a unix machine use *mkimage* to convert the image for u-boot.
+There are three files inside the repository you will need to start the net-boot:
 
-.. code-block:: shell
+* The kernel, located in ``kernel/Image-imx8mm-tx8m``
+* The dtb, located in ``dtb/imx8mm-tx8m-1610-devkit.dtb``
+* The initram file, located in ``initram/uInitrd``
 
-	mkimage -A arm -T ramdisk -C none -n uInitrd -d /path/to/initrd /path/to/uInitrd
+Setup a NFS share and put these three files inside it, to access them via TFTP in u-boot.
 
-Put the generated *uInitrd*, our kernel(4.9 lothar) and devicetree to a directory of your choice inside a NFS-share your u-boot can access.
+**NOTE:** The initram file is for the debian-stretch net installer. If you'd like to try other versions you have to convert the initram *.img* files to fit u-boot.
+This is explained `here <../faq/general/ramdisk-uboot.html>`_. It's not guaranteed that other versions or systems will work with our module.
 
+**Preparing your device**
+
+1. Connect the 12V DC power and a network cable to your board.
+2. Connect the USB to UART cable and connect to your board with a terminal to boot into U-Boot. Detailed description of how to connect to a terminal is `here <../faq/general/terminal.html>`_.
 
 **Configuring your U-Boot**
 
-The following commands work for Ka-Ro diretcly.
+You should now be inside the u-boot terminal. You need to run some commands to setup the netboot.
+
+**NOTE:** When you copy multiple lines of the commands, this might work, but u-boot can also "swollow" some characters. To avoid this, just copy every single line and run it. You might use an editor to prepare the commands to your needs.
 
 1. Setting addresses for loading netboot:
 
@@ -54,11 +74,14 @@ The following commands work for Ka-Ro diretcly.
 
 .. code-block:: shell
 
+  # get an ip-address
 	dhcp
-	setenv serverip '192.168.1.9'
-	tftpboot ${kernel_addr_r} /tx8m/Image_mx8mmevk
-	tftpboot ${fdt_addr_r} /tx8m/imx8mm-tx8m-1610-mb7.dtb
-	tftpboot ${ramdisk_addr_r} /tx8m/debian-installer/arm64/uInitrd
+  # connect to your nfs-share
+	setenv serverip {nfs-ip}
+  # load files with tftpboot
+	tftpboot ${kernel_addr_r} Image-imx8mm-tx8m
+	tftpboot ${fdt_addr_r} imx8mm-tx8m-1610-devkit.dtb
+	tftpboot ${ramdisk_addr_r} uInitrd
 
 **Booting the installer**
 
@@ -78,7 +101,6 @@ You will be guided through the installation. Make sure to:
 	|p1,256mb,ext4,mount=/boot
 	|p2,all-space,ext4,mount=/
 	|p3,512mb,swap
-* TODO insert screenshots of installation
 
 After installation you will be warned, that there's no bootloader. This is okay for us, so just keep in mind at which device the installation is and hit enter. The system should boot you back into u-boot.
 
@@ -95,9 +117,9 @@ After installation you will be warned, that there's no bootloader. This is okay 
 .. code-block:: shell
 
 	dhcp
-	setenv serverip 192.168.1.9
-	tftpboot ${loadaddr} /tx8m/Image_mx8mmevk
-	tftpboot ${fdt_addr} /tx8m/imx8mm-tx8m-1610-mb7.dtb
+	setenv serverip {nfs-ip}
+	tftpboot ${loadaddr} Image-imx8mm-tx8m
+	tftpboot ${fdt_addr} imx8mm-tx8m-1610-devkit.dtb
 
 3. Save the environment:
 
@@ -115,19 +137,19 @@ Your installation should boot, just login.
 
 **Kernel and devicetree into eMMC**
 
-1. Install NFS client and mount TFTP-boot:
+1. Install NFS client and mount your nfs-share:
 
 .. code-block:: shell
 
 	apt install nfs-common
-	mount 192.168.1.9:/volume1/trans/tftpboot /mnt
+	mount {nfs-ip}:/tftpboot /mnt
 
 2. Copy kernel and dtb into /boot
 
 .. code-block:: shell
 
-	cp /mnt/tx8m/Image_mx8mmevk /boot/
-	cp /mnt/tx8m/imx8mm-tx8m-1610-mb7.dtb /boot/
+	cp /mnt/Image-imx8mm-tx8m /boot/
+	cp /mnt/imx8mm-tx8m-1610-devkit.dtb /boot/
 
 Just reboot your system, you should be in u-boot again.
 
@@ -137,8 +159,8 @@ Just reboot your system, you should be in u-boot again.
 
 .. code-block:: shell
 
-	setenv loadkernel 'ext4load mmc 0 ${loadaddr} Image_mx8mmevk'
-	setenv loadfdt 'ext4load mmc 0 ${fdt_addr} imx8mm-tx8m-1610-mb7.dtb'
+	setenv loadkernel 'ext4load mmc 0 ${loadaddr} Image-imx8mm-tx8m'
+	setenv loadfdt 'ext4load mmc 0 ${fdt_addr} imx8mm-tx8m-1610-devkit.dtb'
 	saveenv
 
 2. Now your module should boot debian itself, try:
@@ -148,6 +170,11 @@ Just reboot your system, you should be in u-boot again.
 	boot
 
 **Enabling display-support**
+
+.. raw:: html
+
+  <p style="color: red;"><b>Display setup documentation is in progress at the moment, actually it won't work...</b></p>
+
 
 You have to copy two folders from Lothar's root-filesystem to get the display working.
 

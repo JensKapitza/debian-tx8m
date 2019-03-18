@@ -6,3 +6,4 @@ General useful information
    :caption: Overview:
 
    Terminal access from host computer <terminal.rst>
+   Converting ramdisk .img file for u-boot <ramdisk-uboot.rst>
