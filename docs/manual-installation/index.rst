@@ -121,13 +121,7 @@ After installation you will be warned, that there's no bootloader. This is okay 
 	tftpboot ${loadaddr} Image-imx8mm-tx8m
 	tftpboot ${fdt_addr} imx8mm-tx8m-1610-devkit.dtb
 
-3. Save the environment:
-
-.. code-block:: shell
-
-	saveenv
-
-4. Boot:
+3. Boot:
 
 .. code-block:: shell
 
@@ -151,23 +145,7 @@ Your installation should boot, just login.
 	cp /mnt/Image-imx8mm-tx8m /boot/
 	cp /mnt/imx8mm-tx8m-1610-devkit.dtb /boot/
 
-Just reboot your system, you should be in u-boot again.
-
-**Booting from eMMC**
-
-1. Change load-commands:
-
-.. code-block:: shell
-
-	setenv loadkernel 'ext4load mmc 0 ${loadaddr} Image-imx8mm-tx8m'
-	setenv loadfdt 'ext4load mmc 0 ${fdt_addr} imx8mm-tx8m-1610-devkit.dtb'
-	saveenv
-
-2. Now your module should boot debian itself, try:
-
-.. code-block:: shell
-
-	boot
+3. Reboot your system, now it just should startup itself.
 
 **Enabling display-support**
 
