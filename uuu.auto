@@ -18,7 +18,7 @@ SDPU: jump
 # TODO: read this from a config file
 FB: ucmd setenv baudrate 115200
 FB: ucmd setenv boot_mode mmc
-FB: ucmd setenv bootargs_mmc 'setenv bootargs console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200 root=/dev/mmcblk0p2 rootwait rw ip=dhcp'
+FB: ucmd setenv bootargs_mmc 'setenv bootargs console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200 root=/dev/mmcblk0p2 rootwait rw'
 FB: ucmd setenv bootcmd 'run bootcmd_${boot_mode} bootm_cmd'
 FB: ucmd setenv bootcmd_mmc run bootargs_mmc loadfdt loadkernel
 FB: ucmd setenv bootm_cmd booti '${loadaddr} ${initrd_addr} ${fdt_addr}'
