@@ -147,7 +147,8 @@ Your installation should boot, just login.
 
 3. Reboot your system, now it just should startup itself.
 
-**Enabling display-support**
+Installing desktop environment
+------------------------------
 
 .. raw:: html
 

@@ -48,7 +48,7 @@ When *uuu* has run with everything okay, you can just remove the bootmode jumper
 Booting
 -------
 
-1. Connect the 12V DC power, a network cable, and the touchscreen into the USB host port of the board. (At the moment network is neccessary to start Debian, we're working on it.)
+1. Connect the 12V DC power cable, and the touchscreen into the USB host port of the board.
 
 2. Wait for your Debian desktop to appear. The login works with ``root:root``.
 

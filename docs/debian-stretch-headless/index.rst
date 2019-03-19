@@ -46,8 +46,10 @@ When *uuu* has run with everything okay, you can just remove the bootmode jumper
 Booting
 -------
 
-1. Connect the 12V DC power and a network cable. (At the moment network is neccessary to start Debian, we're working on it.)
+1. Connect the 12V DC power.
 
 2. Connect with the USB to UART cable to use the system's terminal. See `this <../faq/general/terminal.html>`_.
 
-2. The login works with ``root:root``.
+3. The login works with ``root:root``.
+
+4. If you wish to install a desktop environment you can have a look at `the manual installation guide <../manual-installation/index.html#installing-desktop-environment>`_.
