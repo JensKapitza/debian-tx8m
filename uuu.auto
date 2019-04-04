@@ -9,8 +9,8 @@ uuu_version 1.0.1
 # tation how to setup your board, see our official documentation of this repo.
 ################################################################################
 # boot our uboot with fastboot support
-SDP: boot -f /u-boot/u-boot-tx8m-1610_mfg-2019-03-12.bin
-SDPU: write -f /u-boot/u-boot-tx8m-1610_mfg-2019-03-12.bin -offset 0x57c00
+SDP: boot -f /u-boot/imx-boot-tx8m-1610-mfg.bin-flash_tx8m
+SDPU: write -f /u-boot/imx-boot-tx8m-1610-mfg.bin-flash_tx8m -offset 0x57c00
 SDPU: jump
 ################################################################################
 # prepare uboot environment to boot debian with our settings
@@ -23,7 +23,7 @@ FB: ucmd setenv bootcmd 'run bootcmd_${boot_mode} bootm_cmd'
 FB: ucmd setenv bootcmd_mmc run bootargs_mmc loadfdt loadkernel
 FB: ucmd setenv bootm_cmd booti '${loadaddr} ${initrd_addr} ${fdt_addr}'
 FB: ucmd setenv fdt_addr 0x43000000
-FB: ucmd setenv fdt_file imx8mm-tx8m-1610-devkit.dtb
+FB: ucmd setenv fdt_file imx8mm-tx8m-1610-mipi-mb.dtb
 FB: ucmd setenv fdt_high 0x63000000
 FB: ucmd setenv initrd_addr -
 FB: ucmd setenv initrd_high 0x63800000
@@ -38,7 +38,7 @@ FB: ucmd saveenv
 # this uboot is the one that boots our debian after installation
 FB: ucmd setenv fastboot_dev mmc
 FB: ucmd mmc dev 0
-FB: flash bootloader /u-boot/u-boot-tx8m-1610-2019-03-12.bin
+FB: flash bootloader /u-boot/imx-boot-tx8m-1610-default.bin-flash_tx8m
 FB: ucmd mmc partconf 0 0 1 0
 ################################################################################
 # Run initram with nxp-kernel and nxp-dtb (needed bcs of utp support)
@@ -54,15 +54,13 @@ FB: ucmd setenv fastboot_buffer ${loadaddr}
 FB: ucmd setenv partitions 'uuid_disk=${uuid_gpt_disk};name=boot,size=32M,start=1MiB,uuid=${uuid_boot};name=swap,size=512M,uuid=${uuid_swap};name=rootfs,size=MAX,uuid=0cc66cc0-5458-384d-1610-726f6f746673;'
 FB: ucmd gpt write mmc 0 ${partitions}
 # load nxp kernel
-FB: download -f /kernel/414nxp.bin
+FB: download -f /kernel/Image-imx8mm-tx8m
 FB: ucmd setenv fastboot_buffer ${fdt_addr}
 # load nxp dtb
-FB: download -f /dtb/nxp.dtb
+FB: download -f /dtb/imx8mm-tx8m-1610-mipi-mb.dtb
 FB: ucmd setenv initram_addr 0x50000000
 FB: ucmd setenv fastboot_buffer ${initram_addr}
 FB: ucmd fdt addr ${fdt_addr}
-# disable CAAM, otherwise kernel won't start
-FB: ucmd fdt rm /caam ; fdt rm /caam-sm ; fdt rm /caam-snvs ; fdt rm /caam_secvio
 FB: download -f /initram/fsl-nxp.cpio.gz.u-boot
 FB: acmd booti ${loadaddr} ${initram_addr} ${fdt_addr}
 ################################################################################
@@ -75,8 +73,8 @@ FBK: ucmd mkfs.ext4 -L rfs /dev/mmcblk0p3
 FBK: ucmd mount /dev/mmcblk0p1 /mnt
 FBK: acmd cat - > /mnt/Image-imx8mm-tx8m
 FBK: ucp /kernel/Image-imx8mm-tx8m t:-
-FBK: acmd cat - > /mnt/imx8mm-tx8m-1610-devkit.dtb
-FBK: ucp /dtb/imx8mm-tx8m-1610-devkit.dtb t:-
+FBK: acmd cat - > /mnt/imx8mm-tx8m-1610-mipi-mb.dtb
+FBK: ucp /dtb/imx8mm-tx8m-1610-mipi-mb.dtb t:-
 FBK: ucmd sync && umount /mnt
 ################################################################################
 # Copy rootfs (unpack the tar and put it to mmcblk0p3 mounted as rootfs)
