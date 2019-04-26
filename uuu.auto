@@ -16,22 +16,44 @@ SDPU: jump
 # prepare uboot environment to boot debian with our settings
 # write this to emmc to get it used later
 # TODO: read this from a config file
-FB: ucmd setenv baudrate 115200
-FB: ucmd setenv boot_mode mmc
-FB: ucmd setenv bootargs_mmc 'setenv bootargs console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200 root=/dev/mmcblk0p3 rootwait rw'
+FB: ucmd setenv append_bootargs 'clk_ignore_unused debug'
+FB: ucmd setenv arch 'arm'
+FB: ucmd setenv baseboard 'mipi-mb'
+FB: ucmd setenv baudrate '115200'
+FB: ucmd setenv board 'imx8mm-tx8m-1610'
+FB: ucmd setenv board_name 'tx8mm'
+FB: ucmd setenv boot_mode 'mmc'
+FB: ucmd setenv bootargs_mmc 'run default_bootargs; setenv bootargs ${bootargs} root=PARTUUID=${uuid_rootfs} ${append_bootargs}'
+FB: ucmd setenv bootargs_nfs 'run default_bootargs; setenv bootargs root=/dev/nfs nfsroot=${nfs_server}:${nfsroot},nolock ${append_bootargs}'
 FB: ucmd setenv bootcmd 'run bootcmd_${boot_mode} bootm_cmd'
-FB: ucmd setenv bootcmd_mmc run bootargs_mmc loadfdt loadkernel
-FB: ucmd setenv bootm_cmd booti '${loadaddr} ${initrd_addr} ${fdt_addr}'
-FB: ucmd setenv fdt_addr 0x43000000
-FB: ucmd setenv fdt_file imx8mm-tx8m-1610-mipi-mb.dtb
-FB: ucmd setenv fdt_high 0x63000000
-FB: ucmd setenv initrd_addr -
-FB: ucmd setenv initrd_high 0x63800000
-FB: ucmd setenv loadaddr 0x40480000
-FB: ucmd setenv mmcdev 0
-FB: ucmd setenv mmcpart 1
-FB: ucmd setenv loadfdt 'load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}'
-FB: ucmd setenv loadkernel 'load mmc ${mmcdev}:${mmcpart} ${loadaddr} Image-imx8mm-tx8m'
+FB: ucmd setenv bootcmd_mmc 'run loadkernel bootargs_mmc'
+FB: ucmd setenv bootcmd_nfs 'run loadkernel bootargs_nfs'
+FB: ucmd setenv bootdelay '3'
+FB: ucmd setenv bootm_cmd 'booti ${loadaddr} ${initrd_addr} ${fdt_addr}'
+FB: ucmd setenv console 'ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200'
+FB: ucmd setenv cpu 'armv8'
+FB: ucmd setenv default_bootargs 'setenv bootargs console=${console} panic=-1 ro'
+FB: ucmd setenv emmc_boot_ack '1'
+FB: ucmd setenv emmc_boot_part '1'
+FB: ucmd setenv fdt_addr '43000000'
+FB: ucmd setenv fdt_file 'imx8mm-tx8m-1610-mipi-mb.dtb'
+FB: ucmd setenv fdt_high '63000000'
+FB: ucmd setenv fdt_size 'b000'
+FB: ucmd setenv fdtaddr '43000000'
+FB: ucmd setenv fdtcontroladdr '7c92e318'
+FB: ucmd setenv fdtsave 'save mmc ${mmcdev} ${fdt_addr} ${fdt_file} ${fdt_size}'
+FB: ucmd setenv initrd_addr '-'
+FB: ucmd setenv initrd_high '63800000'
+FB: ucmd setenv linux_image 'Image-imx8mm-tx8m'
+FB: ucmd setenv loadaddr '40480000'
+FB: ucmd setenv loadfdt 'if test "${baseboard}" != "";then fdtfile=Image-${board}-${baseboard}.dtb;else fdtfile=Image-${board}.dtb;fi;load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdtfile}'
+FB: ucmd setenv loadkernel 'load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${linux_image}'
+FB: ucmd setenv mmcdev '0'
+FB: ucmd setenv mmcpart '1'
+FB: ucmd setenv panel 'MIPI2LVDS'
+FB: ucmd setenv soc 'imx8m'
+FB: ucmd setenv uuid_rootfs '0cc66cc0-5458-384d-1610-726f6f746673'
+FB: ucmd setenv vendor 'karo'
 FB: ucmd saveenv
 ################################################################################
 # write our non-fastboot uboot to emmc
@@ -41,7 +63,7 @@ FB: ucmd mmc dev 0
 FB: flash bootloader /u-boot/imx-boot-tx8m-1610-default.bin-flash_tx8m
 FB: ucmd mmc partconf 0 0 1 0
 ################################################################################
-# Run initram with nxp-kernel and nxp-dtb (needed bcs of utp support)
+# Run initram
 FB: ucmd setenv emmc_dev 0
 FB: ucmd setenv fastboot_dev mmc
 FB: ucmd setenv mmcdev ${emmc_dev}
@@ -51,16 +73,17 @@ FB: ucmd setenv console ttymxc0,115200
 FB: ucmd setenv bootargs init=/linuxrc console=${console} panic=-1 ro ${append_bootargs}
 FB: ucmd setenv fastboot_buffer ${loadaddr}
 # Partitioning
-FB: ucmd setenv partitions 'uuid_disk=${uuid_gpt_disk};name=boot,size=32M,start=1MiB,uuid=${uuid_boot};name=swap,size=512M,uuid=${uuid_swap};name=rootfs,size=MAX,uuid=0cc66cc0-5458-384d-1610-726f6f746673;'
+FB: ucmd setenv partitions 'uuid_disk=${uuid_gpt_disk};name=boot,size=128M,start=1MiB,uuid=${uuid_boot};name=swap,size=512M,uuid=${uuid_swap};name=rootfs,size=MAX,uuid=0cc66cc0-5458-384d-1610-726f6f746673;'
 FB: ucmd gpt write mmc 0 ${partitions}
-# load nxp kernel
+# load kernel
 FB: download -f /kernel/Image-imx8mm-tx8m
 FB: ucmd setenv fastboot_buffer ${fdt_addr}
-# load nxp dtb
+# load dtb
 FB: download -f /dtb/imx8mm-tx8m-1610-mipi-mb.dtb
 FB: ucmd setenv initram_addr 0x50000000
 FB: ucmd setenv fastboot_buffer ${initram_addr}
 FB: ucmd fdt addr ${fdt_addr}
+# load initram
 FB: download -f /initram/fsl-nxp.cpio.gz.u-boot
 FB: acmd booti ${loadaddr} ${initram_addr} ${fdt_addr}
 ################################################################################
