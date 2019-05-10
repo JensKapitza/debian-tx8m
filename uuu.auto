@@ -9,8 +9,8 @@ uuu_version 1.0.1
 # tation how to setup your board, see our official documentation of this repo.
 ################################################################################
 # boot our uboot with fastboot support
-SDP: boot -f /u-boot/imx-boot-tx8m-1610-mfg.bin-flash_tx8m
-SDPU: write -f /u-boot/imx-boot-tx8m-1610-mfg.bin-flash_tx8m -offset 0x57c00
+SDP: boot -f /u-boot/u-boot-tx8m-1610_mfg.bin
+SDPU: write -f /u-boot/u-boot-tx8m-1610_mfg.bin -offset 0x57c00
 SDPU: jump
 ################################################################################
 # prepare uboot environment to boot debian with our settings
@@ -60,7 +60,7 @@ FB: ucmd saveenv
 # this uboot is the one that boots our debian after installation
 FB: ucmd setenv fastboot_dev mmc
 FB: ucmd mmc dev 0
-FB: flash bootloader /u-boot/imx-boot-tx8m-1610-default.bin-flash_tx8m
+FB: flash bootloader /u-boot/u-boot-tx8m-1610.bin
 FB: ucmd mmc partconf 0 0 1 0
 ################################################################################
 # Run initram
